@@ -1,7 +1,14 @@
 #!/usr/bin/env python
-import socket,time,pycom
+import socket,time,pycom,os
+from machine import UART
 from network import LoRa
-a = 0
+
+print (" - Base Station Receiver")
+
+uart = UART(0, 115200)
+os.dupterm(uart)
+print (" - Serial starting at 115200bps")
+
 lora = LoRa(
     mode=LoRa.LORA,
     frequency=915000000,
@@ -17,16 +24,12 @@ lora = LoRa(
 
 s = socket.socket(socket.AF_LORA, socket.SOCK_RAW)
 s.setblocking(False)
-print (" - Base Station Receiver")
 print (" - LoRa network starting at 915MHz")
 
-
 while True:
-
-    s.send('Marco')
-    print ("[OK] Marco : " + str(a) + "s")
-    pycom.rgbled(0x7F7F7F)
-    time.sleep(0.5)
-    pycom.rgbled(0x0)
-    time.sleep(10)
-    a = a + 10
+    data = s.recv(64)
+    if data:
+        print (" - LoRa RX : " + str(data))
+        pycom.rgbled(0x7F0000)
+        time.sleep(0.5)
+        pycom.rgbled(0x000000)
